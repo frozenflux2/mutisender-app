@@ -10,16 +10,15 @@ import {
   TokenAddressInput,
 } from "./style";
 import { AddressList } from "./components";
-import { DropDown } from "./components";
-import { REGISTER } from "redux-persist/lib/constants";
+// import { DropDown } from "./components";
 import mutisenderAbi from "abis/mutisenderAbi.json";
 import ERC20ABI from "abis/ERC20ABI.json";
 
 import { BigNumber } from "ethers";
-import { produceWithPatches } from "immer";
 // ----------------------------------------------------------
 
 export default function index() {
+  if (!window?.ethereum) return <></>;
   const web3 = new Web3(window.ethereum);
   const walletAddress = window.ethereum.selectedAddress;
 
