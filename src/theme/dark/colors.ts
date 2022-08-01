@@ -1,13 +1,13 @@
 const baseColor = {
-  white: "#000000",
+  white: "#ffffff",
   whites: {
     100: "#F8F9FA",
     200: "#f1f1f1",
   },
   black: {
-    regular: "#ffffff",
-    normal: "#F8F9FA",
-    100: "#F8F9FA",
+    regular: "#000000",
+    normal: "#140A01",
+    100: "#282c34",
   },
   gray: {
     regular: "#A28888",
