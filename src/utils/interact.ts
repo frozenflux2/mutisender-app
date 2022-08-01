@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-// import { chainId } from "constants/address";
+import { chainId } from "constants/address";
 
 export const connectWallet = async () => {
   if (window.ethereum) {
@@ -21,7 +21,7 @@ export const connectWallet = async () => {
           status: "Connect your wallet account to the site.",
         };
       }
-    } catch (err) {
+    } catch (err: any) {
       return {
         address: "",
         status: err.message,
@@ -57,7 +57,7 @@ export const getCurrentWalletConnected = async () => {
             "Connect to Metamask and choose the correct chain using the top right button.",
         };
       }
-    } catch (err) {
+    } catch (err: any) {
       return {
         address: "",
         status: err.message,
