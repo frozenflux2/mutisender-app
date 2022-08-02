@@ -27,21 +27,22 @@ export default function index() {
   //   "0x2ffb889B57b9335D4e804Dd19c93a01a70ae9B0b"
   // );
   // const owner = "0x1F713e607fa0FCC5Bad4A3f0Fd24Ab0fD8Fb3BF4";
-  const tokenAddress = "0xf5A89a2F90f79fC09AF021b09fB218C682113574";
+  // const tokenAddress = "0xf5A89a2F90f79fC09AF021b09fB218C682113574";
+  const contractAddress = "0x3d9eCf0F8AB872a95d825d4923df86784BaBBe50";
   const MultiSenderContract = new web3.eth.Contract(
     mutisenderAbi as any,
-    "0x3d9eCf0F8AB872a95d825d4923df86784BaBBe50"
+    contractAddress
   );
   // const account = web3.eth.getAccounts;
   // console.log(account[0]);
-  console.log(MultiSenderContract);
+  // console.log(MultiSenderContract);
   const [currentValue, setCurrentValue] = useState<string>("");
   const [currentTokenAddress, setCurrentTokenAddress] = useState<string>("");
   const [fullList, setFullList] = useState<string[]>([]);
   const [addressList, setAddressList] = useState<string[]>([]);
   const [amountList, setAmountList] = useState<BigNumber[]>([]);
   const [removedKey, setRemovedKey] = useState<number>(-1);
-  const handleMutisender = () => {
+  const handleMutisender = async () => {
     const reg = /0x[a-fA-F0-9]{40}/;
     const result = reg.test(currentTokenAddress);
     if (result && addressList && amountList) {
@@ -49,46 +50,38 @@ export default function index() {
         ERC20ABI as any,
         currentTokenAddress
       );
-      const allowance = TokenContract.methods.allowance(
-        walletAddress,
-        tokenAddress
-      );
-      if (!allowance) {
-        TokenContract.methods.approve(
-          tokenAddress,
-          BigNumber.from(
-            "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      console.log("token", TokenContract);
+      const allowance = await TokenContract.methods
+        .allowance(walletAddress, contractAddress)
+        .call();
+      console.log("wonder", allowance);
+      if (allowance == 0) {
+        await TokenContract.methods
+          .approve(
+            contractAddress,
+            BigNumber.from(
+              "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+            )
           )
-        );
-      }
-      // window.addEventListener("load", async () => {
-      //   try {
-      //     await window.ethereum.enable();
-      //   } catch (error) {
-      //     console.log(error);
-      //   }
-      // });
-      console.log(addressList, amountList);
-      // if (value == 0) {
-      //   MultiSenderContract.methods.MultisendToken(
-      //     TokenContract,
-      //     addressList,
-      //     amountList
-      //   );
-      // } else {
-      // let value = new BigNumber(0x03).pow(17)
+          .send({
+            from: walletAddress,
+          });
 
-      MultiSenderContract.methods
-        .MultisendToken(tokenAddress, addressList, amountList)
-        .send({
-          from: "0x1F713e607fa0FCC5Bad4A3f0Fd24Ab0fD8Fb3BF4",
-          // value: value,
-        });
-      // MultiSenderContract.methods.MultisendBNB(addressList, amountList).send({
-      //   from: "0x1F713e607fa0FCC5Bad4A3f0Fd24Ab0fD8Fb3BF4",
-      //   value: BigNumber.from(10000000),
-      // });
-      // }
+        await MultiSenderContract.methods
+          .MultisendToken(currentTokenAddress, addressList, amountList)
+          .send({
+            from: walletAddress,
+          });
+      } else {
+        console.log("OK", allowance);
+        // console.log(addressList, amountList);
+
+        await MultiSenderContract.methods
+          .MultisendToken(currentTokenAddress, addressList, amountList)
+          .send({
+            from: walletAddress,
+          });
+      }
     }
   };
 
@@ -123,7 +116,7 @@ export default function index() {
         ...amountList,
         BigNumber.from(currentValue.split(",")[1]),
       ]);
-      console.log(amountList);
+      // console.log(amountList);
     }
   };
 
@@ -154,14 +147,4 @@ export default function index() {
       </InputToolContainer>
     </MainWrapper>
   );
-}
-function contract_abi(contract_abi: any, contract_address: any) {
-  throw new Error("Function not implemented.");
-}
-
-function contract_address(
-  contract_abi: (contract_abi: any, contract_address: any) => void,
-  contract_address: any
-) {
-  throw new Error("Function not implemented.");
 }
