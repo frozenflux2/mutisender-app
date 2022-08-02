@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Web3 from "web3";
-// styled components
 import {
   MainWrapper,
   InputToolContainer,
@@ -22,26 +21,19 @@ export default function index() {
   const web3 = new Web3(window.ethereum);
   const walletAddress = window.ethereum.selectedAddress;
 
-  // const MultiSenderContract = new web3.eth.Contract(
-  //   mutisenderAbi as any,
-  //   "0x2ffb889B57b9335D4e804Dd19c93a01a70ae9B0b"
-  // );
-  // const owner = "0x1F713e607fa0FCC5Bad4A3f0Fd24Ab0fD8Fb3BF4";
-  // const tokenAddress = "0xf5A89a2F90f79fC09AF021b09fB218C682113574";
   const contractAddress = "0x3d9eCf0F8AB872a95d825d4923df86784BaBBe50";
   const MultiSenderContract = new web3.eth.Contract(
     mutisenderAbi as any,
     contractAddress
   );
-  // const account = web3.eth.getAccounts;
-  // console.log(account[0]);
-  // console.log(MultiSenderContract);
+
   const [currentValue, setCurrentValue] = useState<string>("");
   const [currentTokenAddress, setCurrentTokenAddress] = useState<string>("");
   const [fullList, setFullList] = useState<string[]>([]);
   const [addressList, setAddressList] = useState<string[]>([]);
   const [amountList, setAmountList] = useState<BigNumber[]>([]);
   const [removedKey, setRemovedKey] = useState<number>(-1);
+
   const handleMutisender = async () => {
     const reg = /0x[a-fA-F0-9]{40}/;
     const result = reg.test(currentTokenAddress);
@@ -50,29 +42,34 @@ export default function index() {
         ERC20ABI as any,
         currentTokenAddress
       );
-      console.log("token", TokenContract);
-      const allowance = await TokenContract.methods
-        .allowance(walletAddress, contractAddress)
+      // console.log("token", TokenContract);
+      const tokenBalance = await TokenContract.methods
+        .balanceOf(walletAddress)
         .call();
-      console.log("wonder", allowance);
-      if (allowance == 0) {
-        await TokenContract.methods
-          .approve(
-            contractAddress,
-            BigNumber.from(
-              "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      console.log(tokenBalance);
+      let temp: BigNumber = BigNumber.from(0);
+      for (let i = 0; i < amountList.length; i++) {
+        temp = temp.add(amountList[i]);
+      }
+      const tokenBalanceBN = BigNumber.from(tokenBalance);
+      if (temp.lte(tokenBalanceBN)) {
+        // const allowanceAmount: BigNumber = tokenBalanceBN.sub(temp);
+        const allowance = await TokenContract.methods
+          .allowance(walletAddress, contractAddress)
+          .call();
+        console.log("wonder", allowance);
+        if (allowance == 0) {
+          await TokenContract.methods
+            .approve(
+              contractAddress,
+              BigNumber.from(
+                "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+              )
             )
-          )
-          .send({
-            from: walletAddress,
-          });
-
-        await MultiSenderContract.methods
-          .MultisendToken(currentTokenAddress, addressList, amountList)
-          .send({
-            from: walletAddress,
-          });
-      } else {
+            .send({
+              from: walletAddress,
+            });
+        }
         console.log("OK", allowance);
         // console.log(addressList, amountList);
 
@@ -81,6 +78,8 @@ export default function index() {
           .send({
             from: walletAddress,
           });
+      } else {
+        alert("Total exceed the balance of token");
       }
     }
   };
